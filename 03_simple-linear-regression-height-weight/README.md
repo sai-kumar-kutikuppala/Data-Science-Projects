@@ -1,1 +1,1 @@
-
+A beginner-friendly implementation of Simple Linear Regression to predict height from weight, covering EDA, feature scaling, train-test split, model evaluation (MSE, RMSE, R², Adjusted R²), and OLS regression using scikit-learn and statsmodels.
