@@ -12,5 +12,5 @@ A Multiple Linear Regression project predicting stock index price using interest
 * Performance evaluation: MAE, MSE, RMSE, R², and Adjusted R²
 * Regression assumption checks: residual distribution (KDE plot) and residual vs. prediction scatter plot
 * Statistical validation using statsmodels OLS regression summary
-* 
+
 Tech Stack: Python, Pandas, NumPy, Matplotlib, Seaborn, Scikit-learn, Statsmodels
