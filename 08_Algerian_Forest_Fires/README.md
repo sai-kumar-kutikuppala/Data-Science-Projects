@@ -38,6 +38,3 @@ The model is trained on the **Algerian Forest Fires Dataset**, which contains we
 - **ML Libraries:** Scikit-learn, NumPy, Pandas
 - **Web Framework:** Flask
 - **Frontend:** HTML, Bootstrap
-- **Deployment:** AWS Elastic Beanstalk
-
-## 📁 Project Structure
