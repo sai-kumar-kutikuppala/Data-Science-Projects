@@ -10,9 +10,8 @@ This project uses regression-based machine learning to estimate the FWI using en
 
 - Predicts Forest Fire Weather Index using a trained regression model
 - Simple, responsive Bootstrap-based web interface
-- Built with Flask for easy deployment
-- Deployable on AWS Elastic Beanstalk
-
+- Built with Flask
+- 
 ## 📊 Dataset
 
 The model is trained on the **Algerian Forest Fires Dataset**, which contains weather observations and fire indices collected from two regions in Algeria (Bejaia and Sidi Bel-abbes).
