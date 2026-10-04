@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trips & Travel · Package Purchase Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <p class="eyebrow">Trips & Travel.com</p>
+      <h1>Holiday package purchase predictor</h1>
+      <p class="lede">
+        Score a customer before outreach. The model estimates whether they will buy a package,
+        so marketing spend can focus on the right people for the new Wellness Tourism offering.
+      </p>
+      <div class="metrics">
+        <div class="metric">
+          <span class="metric-value">{{ "%.1f"|format(metrics.accuracy * 100) }}%</span>
+          <span class="metric-label">Test accuracy</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ "%.1f"|format(metrics.roc_auc * 100) }}%</span>
+          <span class="metric-label">ROC AUC</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ "%.1f"|format(metrics.precision * 100) }}%</span>
+          <span class="metric-label">Precision</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ "%.1f"|format(metrics.recall * 100) }}%</span>
+          <span class="metric-label">Recall</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="card form-card">
+        <h2>Customer profile</h2>
+        <p class="hint">Fill in last year’s customer fields. Occupancy is combined into total visitors automatically.</p>
+
+        {% if error %}
+        <div class="alert">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+          <div class="grid">
+            <label>
+              Age
+              <input type="number" name="Age" min="18" max="80" step="1" value="{{ values.Age }}" required>
+            </label>
+            <label>
+              Gender
+              <select name="Gender">
+                <option value="Male" {% if values.Gender == 'Male' %}selected{% endif %}>Male</option>
+                <option value="Female" {% if values.Gender == 'Female' %}selected{% endif %}>Female</option>
+              </select>
+            </label>
+            <label>
+              Marital status
+              <select name="MaritalStatus">
+                {% for opt in ['Married', 'Unmarried', 'Divorced'] %}
+                <option value="{{ opt }}" {% if values.MaritalStatus == opt %}selected{% endif %}>{{ opt }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              Occupation
+              <select name="Occupation">
+                {% for opt in ['Salaried', 'Small Business', 'Large Business', 'Free Lancer'] %}
+                <option value="{{ opt }}" {% if values.Occupation == opt %}selected{% endif %}>{{ opt }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              Designation
+              <select name="Designation">
+                {% for opt in ['Executive', 'Manager', 'Senior Manager', 'AVP', 'VP'] %}
+                <option value="{{ opt }}" {% if values.Designation == opt %}selected{% endif %}>{{ opt }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              Monthly income
+              <input type="number" name="MonthlyIncome" min="1000" step="100" value="{{ values.MonthlyIncome }}" required>
+            </label>
+            <label>
+              City tier
+              <select name="CityTier">
+                {% for opt in ['1', '2', '3'] %}
+                <option value="{{ opt }}" {% if values.CityTier == opt %}selected{% endif %}>Tier {{ opt }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              Passport
+              <select name="Passport">
+                <option value="1" {% if values.Passport == '1' %}selected{% endif %}>Yes</option>
+                <option value="0" {% if values.Passport == '0' %}selected{% endif %}>No</option>
+              </select>
+            </label>
+            <label>
+              Own car
+              <select name="OwnCar">
+                <option value="1" {% if values.OwnCar == '1' %}selected{% endif %}>Yes</option>
+                <option value="0" {% if values.OwnCar == '0' %}selected{% endif %}>No</option>
+              </select>
+            </label>
+            <label>
+              Preferred property star
+              <select name="PreferredPropertyStar">
+                {% for opt in ['3', '4', '5'] %}
+                <option value="{{ opt }}" {% if values.PreferredPropertyStar == opt %}selected{% endif %}>{{ opt }} star</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              Number of trips / year
+              <input type="number" name="NumberOfTrips" min="0" max="30" step="1" value="{{ values.NumberOfTrips }}" required>
+            </label>
+            <label>
+              Adults visiting
+              <input type="number" name="NumberOfPersonVisiting" min="1" max="10" step="1" value="{{ values.NumberOfPersonVisiting }}" required>
+            </label>
+            <label>
+              Children visiting
+              <input type="number" name="NumberOfChildrenVisiting" min="0" max="5" step="1" value="{{ values.NumberOfChildrenVisiting }}" required>
+            </label>
+          </div>
+
+          <h3>Sales pitch</h3>
+          <div class="grid">
+            <label>
+              Type of contact
+              <select name="TypeofContact">
+                <option value="Self Enquiry" {% if values.TypeofContact == 'Self Enquiry' %}selected{% endif %}>Self enquiry</option>
+                <option value="Company Invited" {% if values.TypeofContact == 'Company Invited' %}selected{% endif %}>Company invited</option>
+              </select>
+            </label>
+            <label>
+              Product pitched
+              <select name="ProductPitched">
+                {% for opt in ['Basic', 'Standard', 'Deluxe', 'Super Deluxe', 'King'] %}
+                <option value="{{ opt }}" {% if values.ProductPitched == opt %}selected{% endif %}>{{ opt }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              Duration of pitch (min)
+              <input type="number" name="DurationOfPitch" min="1" max="130" step="1" value="{{ values.DurationOfPitch }}" required>
+            </label>
+            <label>
+              Number of follow-ups
+              <input type="number" name="NumberOfFollowups" min="0" max="10" step="1" value="{{ values.NumberOfFollowups }}" required>
+            </label>
+            <label>
+              Pitch satisfaction (1–5)
+              <input type="number" name="PitchSatisfactionScore" min="1" max="5" step="1" value="{{ values.PitchSatisfactionScore }}" required>
+            </label>
+          </div>
+
+          <button type="submit">Predict purchase likelihood</button>
+        </form>
+      </section>
+
+      <aside class="card result-card">
+        <h2>Prediction</h2>
+        {% if prediction %}
+        <div class="result {% if prediction.will_buy %}buy{% else %}skip{% endif %}">
+          <div class="gauge" style="--score: {{ prediction.probability }}">
+            <strong>{{ prediction.probability }}%</strong>
+            <span>chance of purchase</span>
+          </div>
+          <p class="result-label">{{ prediction.label }}</p>
+          <p class="result-advice">{{ prediction.advice }}</p>
+        </div>
+        {% else %}
+        <div class="empty">
+          <p>Submit a customer profile to see whether they are likely to take a holiday package.</p>
+          <ul>
+            <li>XGBoost classifier with tuned hyperparameters</li>
+            <li>Same cleaning as the training notebook</li>
+            <li>Loaded from <code>artifacts/holiday_package_model.pkl</code></li>
+          </ul>
+        </div>
+        {% endif %}
+      </aside>
+    </main>
+  </div>
+</body>
+</html>
