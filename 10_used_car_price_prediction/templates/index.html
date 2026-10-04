@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Used Car Price Predictor | XGBoost ML</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-decorations">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand-badge">
+                <span class="pulsing-dot"></span>
+                <span>Tuned XGBoost Regressor</span>
+            </div>
+            <h1 class="app-title">Used Car Price <span class="gradient-text">Predictor</span></h1>
+            <p class="app-subtitle">
+                Estimate fair market valuation for second-hand vehicles in India using machine learning trained on 15,000+ CarDekho listings.
+            </p>
+        </header>
+
+        <!-- Quick Presets -->
+        <div class="presets-container">
+            <span class="preset-label">Quick Presets:</span>
+            <div class="preset-buttons">
+                <button type="button" class="preset-btn" onclick="applyPreset('Alto')">🚗 Maruti Alto</button>
+                <button type="button" class="preset-btn" onclick="applyPreset('i20')">🚘 Hyundai i20</button>
+                <button type="button" class="preset-btn" onclick="applyPreset('City')">🏎️ Honda City</button>
+                <button type="button" class="preset-btn" onclick="applyPreset('Creta')">🚙 Hyundai Creta</button>
+                <button type="button" class="preset-btn" onclick="applyPreset('Innova')">🚐 Toyota Innova</button>
+                <button type="button" class="preset-btn" onclick="applyPreset('X5')">✨ BMW X5</button>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="main-card">
+            {% if error %}
+            <div class="alert alert-error">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-content">
+                    <strong>Prediction Error</strong>
+                    <p>{{ error }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if prediction %}
+            <div class="prediction-banner" id="prediction-result">
+                <div class="prediction-header">
+                    <span class="prediction-tag">Estimated Selling Price</span>
+                    <button type="button" class="copy-btn" onclick="copyPrediction()">Copy Estimate</button>
+                </div>
+                <div class="price-display">
+                    <div class="price-large" id="formatted-price">{{ prediction }}</div>
+                    <div class="price-exact">Exact Estimate: <span id="exact-price">{{ prediction_exact }}</span></div>
+                </div>
+                {% if input_data %}
+                <div class="prediction-summary-chips">
+                    <span class="summary-chip"><strong>Car:</strong> {{ input_data.model }}</span>
+                    <span class="summary-chip"><strong>Age:</strong> {{ input_data.vehicle_age }} yrs</span>
+                    <span class="summary-chip"><strong>KM:</strong> {{ "{:,}".format(input_data.km_driven|int) }} km</span>
+                    <span class="summary-chip"><strong>Fuel:</strong> {{ input_data.fuel_type }}</span>
+                    <span class="summary-chip"><strong>Transmission:</strong> {{ input_data.transmission_type }}</span>
+                    <span class="summary-chip"><strong>Engine:</strong> {{ input_data.engine }} cc</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <form action="/predict" method="POST" id="car-form" class="car-form">
+                <!-- Section 1: Vehicle Identity -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <span class="section-num">1</span>
+                        <h3>Car Identity & Usage</h3>
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group full-width">
+                            <div class="label-row">
+                                <label for="model">Car Model <span class="required">*</span></label>
+                                <button type="button" class="btn-text-action" onclick="fillModelDefaults()">Auto-fill typical specs for this car</button>
+                            </div>
+                            <select id="model" name="model" required onchange="handleModelChange(this.value)">
+                                <option value="" disabled {% if not input_data or not input_data.model %}selected{% endif %}>-- Select Car Model ({{ form_options.model|length }} available) --</option>
+                                {% for m in form_options.model %}
+                                <option value="{{ m }}" {% if input_data and input_data.model == m %}selected{% endif %}>{{ m }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="vehicle_age">Vehicle Age (Years) <span class="required">*</span></label>
+                            <input type="number" id="vehicle_age" name="vehicle_age" min="0" max="30" step="1" placeholder="e.g. 5" value="{{ input_data.vehicle_age if input_data else '' }}" required>
+                            <span class="input-hint">Years since registration</span>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="km_driven">Kilometers Driven <span class="required">*</span></label>
+                            <input type="number" id="km_driven" name="km_driven" min="100" max="5000000" step="500" placeholder="e.g. 45000" value="{{ input_data.km_driven if input_data else '' }}" required>
+                            <span class="input-hint">Total odometer reading in km</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Engine & Specifications -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <span class="section-num">2</span>
+                        <h3>Engine & Specifications</h3>
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="mileage">Mileage (kmpl) <span class="required">*</span></label>
+                            <input type="number" id="mileage" name="mileage" min="4.0" max="40.0" step="0.01" placeholder="e.g. 19.5" value="{{ input_data.mileage if input_data else '' }}" required>
+                            <span class="input-hint">Certified fuel economy</span>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="engine">Engine Capacity (CC) <span class="required">*</span></label>
+                            <input type="number" id="engine" name="engine" min="600" max="7000" step="1" placeholder="e.g. 1197" value="{{ input_data.engine if input_data else '' }}" required>
+                            <span class="input-hint">Displacement in cubic centimeters</span>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="max_power">Max Power (bhp) <span class="required">*</span></label>
+                            <input type="number" id="max_power" name="max_power" min="30.0" max="700.0" step="0.1" placeholder="e.g. 82.0" value="{{ input_data.max_power if input_data else '' }}" required>
+                            <span class="input-hint">Brake horsepower output</span>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="seats">Seating Capacity <span class="required">*</span></label>
+                            <select id="seats" name="seats" required>
+                                {% for s in [2, 4, 5, 6, 7, 8, 9] %}
+                                <option value="{{ s }}" {% if input_data and input_data.seats|int == s or (not input_data and s == 5) %}selected{% endif %}>{{ s }} Seater</option>
+                                {% endfor %}
+                            </select>
+                            <span class="input-hint">Number of passenger seats</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Configuration & Market Details -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <span class="section-num">3</span>
+                        <h3>Configuration & Seller</h3>
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="fuel_type">Fuel Type <span class="required">*</span></label>
+                            <select id="fuel_type" name="fuel_type" required>
+                                {% for f in form_options.fuel_type %}
+                                <option value="{{ f }}" {% if input_data and input_data.fuel_type == f %}selected{% endif %}>{{ f }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="transmission_type">Transmission <span class="required">*</span></label>
+                            <select id="transmission_type" name="transmission_type" required>
+                                {% for t in form_options.transmission_type %}
+                                <option value="{{ t }}" {% if input_data and input_data.transmission_type == t %}selected{% endif %}>{{ t }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="seller_type">Seller Type <span class="required">*</span></label>
+                            <select id="seller_type" name="seller_type" required>
+                                {% for st in form_options.seller_type %}
+                                <option value="{{ st }}" {% if input_data and input_data.seller_type == st %}selected{% endif %}>{{ st }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn" id="submit-btn">
+                        <span class="btn-text">⚡ Calculate Predicted Price</span>
+                        <span class="spinner" style="display: none;"></span>
+                    </button>
+                    <button type="button" class="reset-btn" onclick="resetForm()">Reset Form</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Technical Model Specs & API Card -->
+        <div class="info-grid">
+            <div class="info-card">
+                <h4>🧠 Model Architecture</h4>
+                <ul>
+                    <li><strong>Algorithm:</strong> Extreme Gradient Boosting (XGBoost Regressor)</li>
+                    <li><strong>Hyperparameters:</strong> 300 estimators, max_depth=5, learning_rate=0.1, colsample=0.5</li>
+                    <li><strong>Preprocessing:</strong> LabelEncoder + ColumnTransformer (OneHotEncoder + StandardScaler)</li>
+                    <li><strong>Dataset:</strong> 15,411 CarDekho used vehicle records</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <h4>🔌 Developer REST API</h4>
+                <p>Send a POST request to <code>/api/predict</code> with JSON body:</p>
+                <pre><code>curl -X POST http://127.0.0.1:5000/api/predict \
+  -H "Content-Type: application/json" \
+  -d '{"model":"Alto","vehicle_age":5,"km_driven":40000,"mileage":20,"engine":796,"max_power":46.3,"seats":5,"fuel_type":"Petrol","transmission_type":"Manual","seller_type":"Individual"}'</code></pre>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Used Car Price Prediction &bull; Machine Learning Web App &bull; Built with Flask &amp; XGBoost</p>
+        </footer>
+    </div>
+
+    <!-- Inject model defaults for dynamic autofill -->
+    <script>
+        const MODEL_DEFAULTS = {{ model_defaults | tojson }};
+
+        const PRESET_DATA = {
+            'Alto': {
+                'model': 'Alto', 'vehicle_age': 7, 'km_driven': 50000,
+                'mileage': 22.05, 'engine': 796, 'max_power': 47.3,
+                'seats': 5, 'fuel_type': 'Petrol', 'transmission_type': 'Manual',
+                'seller_type': 'Individual'
+            },
+            'i20': {
+                'model': 'i20', 'vehicle_age': 5, 'km_driven': 42000,
+                'mileage': 18.6, 'engine': 1197, 'max_power': 81.86,
+                'seats': 5, 'fuel_type': 'Petrol', 'transmission_type': 'Manual',
+                'seller_type': 'Individual'
+            },
+            'City': {
+                'model': 'City', 'vehicle_age': 6, 'km_driven': 55000,
+                'mileage': 17.8, 'engine': 1498, 'max_power': 117.3,
+                'seats': 5, 'fuel_type': 'Petrol', 'transmission_type': 'Manual',
+                'seller_type': 'Dealer'
+            },
+            'Creta': {
+                'model': 'Creta', 'vehicle_age': 4, 'km_driven': 38000,
+                'mileage': 17.0, 'engine': 1493, 'max_power': 113.4,
+                'seats': 5, 'fuel_type': 'Diesel', 'transmission_type': 'Manual',
+                'seller_type': 'Dealer'
+            },
+            'Innova': {
+                'model': 'Innova', 'vehicle_age': 7, 'km_driven': 85000,
+                'mileage': 12.8, 'engine': 2494, 'max_power': 102.0,
+                'seats': 7, 'fuel_type': 'Diesel', 'transmission_type': 'Manual',
+                'seller_type': 'Individual'
+            },
+            'X5': {
+                'model': 'X5', 'vehicle_age': 5, 'km_driven': 48000,
+                'mileage': 13.38, 'engine': 2993, 'max_power': 258.0,
+                'seats': 5, 'fuel_type': 'Diesel', 'transmission_type': 'Automatic',
+                'seller_type': 'Dealer'
+            }
+        };
+
+        function setFormValues(data) {
+            for (const [key, val] of Object.entries(data)) {
+                const el = document.getElementById(key);
+                if (el) {
+                    el.value = val;
+                }
+            }
+        }
+
+        function applyPreset(name) {
+            if (PRESET_DATA[name]) {
+                setFormValues(PRESET_DATA[name]);
+                // Highlight changed elements briefly
+                const form = document.getElementById('car-form');
+                form.classList.add('flash-highlight');
+                setTimeout(() => form.classList.remove('flash-highlight'), 600);
+            }
+        }
+
+        function handleModelChange(modelName) {
+            // Optional auto-prompt or auto-populate when model is selected
+            if (MODEL_DEFAULTS && MODEL_DEFAULTS[modelName]) {
+                const defaults = MODEL_DEFAULTS[modelName];
+                // Only autofill if engine or mileage are empty
+                const engineEl = document.getElementById('engine');
+                if (!engineEl.value || engineEl.value === '') {
+                    fillModelDefaults();
+                }
+            }
+        }
+
+        function fillModelDefaults() {
+            const modelSelect = document.getElementById('model');
+            const modelName = modelSelect.value;
+            if (!modelName) {
+                alert('Please pick a Car Model first!');
+                return;
+            }
+            if (MODEL_DEFAULTS && MODEL_DEFAULTS[modelName]) {
+                const d = MODEL_DEFAULTS[modelName];
+                document.getElementById('vehicle_age').value = d.vehicle_age;
+                document.getElementById('km_driven').value = d.km_driven;
+                document.getElementById('mileage').value = d.mileage;
+                document.getElementById('engine').value = d.engine;
+                document.getElementById('max_power').value = d.max_power;
+                document.getElementById('seats').value = d.seats;
+                document.getElementById('fuel_type').value = d.fuel_type;
+                document.getElementById('transmission_type').value = d.transmission_type;
+                document.getElementById('seller_type').value = d.seller_type;
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('car-form').reset();
+            const result = document.getElementById('prediction-result');
+            if (result) {
+                result.style.display = 'none';
+            }
+        }
+
+        function copyPrediction() {
+            const price = document.getElementById('formatted-price');
+            const exact = document.getElementById('exact-price');
+            if (price) {
+                const text = `${price.innerText} (${exact.innerText})`;
+                navigator.clipboard.writeText(text).then(() => {
+                    const btn = document.querySelector('.copy-btn');
+                    btn.innerText = 'Copied! ✓';
+                    setTimeout(() => btn.innerText = 'Copy Estimate', 2000);
+                });
+            }
+        }
+
+        // Show spinner on submit
+        document.getElementById('car-form').addEventListener('submit', function() {
+            const btn = document.getElementById('submit-btn');
+            btn.querySelector('.btn-text').innerText = 'Calculating...';
+            btn.querySelector('.spinner').style.display = 'inline-block';
+            btn.disabled = true;
+        });
+
+        // Scroll to prediction if present
+        window.addEventListener('DOMContentLoaded', () => {
+            const res = document.getElementById('prediction-result');
+            if (res) {
+                res.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+    </script>
+</body>
+</html>
