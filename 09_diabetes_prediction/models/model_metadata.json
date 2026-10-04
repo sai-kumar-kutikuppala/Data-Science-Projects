@@ -1,0 +1,96 @@
+{
+    "model_name": "DecisionTreeRegressor",
+    "task": "Diabetes Progression Prediction",
+    "parameters": {
+        "criterion": "squared_error",
+        "max_depth": 4,
+        "max_features": "log2",
+        "splitter": "random",
+        "random_state": 54
+    },
+    "metrics": {
+        "r2_score": 0.3825,
+        "mean_absolute_error": 51.94,
+        "mean_squared_error": 3907.32,
+        "root_mean_squared_error": 62.51
+    },
+    "target_stats": {
+        "min": 25.0,
+        "max": 346.0,
+        "mean": 152.13
+    },
+    "feature_names": [
+        "age",
+        "sex",
+        "bmi",
+        "bp",
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s5",
+        "s6"
+    ],
+    "feature_stats": {
+        "age": {
+            "raw_min": 19.0,
+            "raw_max": 79.0,
+            "raw_mean": 48.52,
+            "description": "Age (years)"
+        },
+        "sex": {
+            "raw_min": 1.0,
+            "raw_max": 2.0,
+            "raw_mean": 1.47,
+            "description": "Sex (1 = Male, 2 = Female)"
+        },
+        "bmi": {
+            "raw_min": 18.0,
+            "raw_max": 42.2,
+            "raw_mean": 26.38,
+            "description": "Body Mass Index (kg/m\u00b2)"
+        },
+        "bp": {
+            "raw_min": 62.0,
+            "raw_max": 133.0,
+            "raw_mean": 94.65,
+            "description": "Average Blood Pressure (mm Hg)"
+        },
+        "s1": {
+            "raw_min": 97.0,
+            "raw_max": 301.0,
+            "raw_mean": 189.14,
+            "description": "Total Serum Cholesterol (tc)"
+        },
+        "s2": {
+            "raw_min": 41.6,
+            "raw_max": 242.4,
+            "raw_mean": 115.44,
+            "description": "Low-Density Lipoproteins (ldl)"
+        },
+        "s3": {
+            "raw_min": 22.0,
+            "raw_max": 99.0,
+            "raw_mean": 49.79,
+            "description": "High-Density Lipoproteins (hdl)"
+        },
+        "s4": {
+            "raw_min": 2.0,
+            "raw_max": 9.09,
+            "raw_mean": 4.07,
+            "description": "Total Cholesterol / HDL (tch)"
+        },
+        "s5": {
+            "raw_min": 3.26,
+            "raw_max": 6.11,
+            "raw_mean": 4.64,
+            "description": "Log of Serum Triglycerides (ltg)"
+        },
+        "s6": {
+            "raw_min": 58.0,
+            "raw_max": 124.0,
+            "raw_mean": 91.26,
+            "description": "Blood Sugar Level (glu)"
+        }
+    }
+}

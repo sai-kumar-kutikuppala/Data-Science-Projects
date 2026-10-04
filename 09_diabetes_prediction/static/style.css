@@ -1,0 +1,293 @@
+/* ===== CSS Reset & Base ===== */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* ===== Container ===== */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+/* ===== Header ===== */
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #fff;
+}
+
+.header h1 {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.subtitle {
+    font-size: 1.05rem;
+    opacity: 0.9;
+    margin-bottom: 15px;
+}
+
+.model-info {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ===== Alerts ===== */
+.alert {
+    padding: 14px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+/* ===== Result Card ===== */
+.result-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.result-card h2 {
+    font-size: 1.2rem;
+    color: #6b7280;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.prediction-value {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #4f46e5;
+    margin: 10px 0;
+}
+
+.prediction-label {
+    font-size: 1rem;
+    color: #6b7280;
+    margin-bottom: 5px;
+}
+
+.prediction-hint {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-bottom: 20px;
+}
+
+/* Severity Bar */
+.severity-bar {
+    position: relative;
+    height: 12px;
+    background: #e5e7eb;
+    border-radius: 6px;
+    overflow: visible;
+    margin: 0 20px;
+}
+
+.severity-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #22c55e 0%, #eab308 50%, #ef4444 100%);
+    width: 0;
+    transition: width 0.8s ease;
+}
+
+.severity-marker {
+    position: absolute;
+    top: -5px;
+    width: 22px;
+    height: 22px;
+    background: #fff;
+    border: 3px solid #4f46e5;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    left: 0;
+    transition: left 0.8s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.severity-labels {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 20px 0;
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+/* ===== Form ===== */
+.prediction-form {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.prediction-form h2 {
+    font-size: 1.4rem;
+    color: #1f2937;
+    margin-bottom: 5px;
+}
+
+.form-hint {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.form-group input {
+    padding: 10px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    background: #f9fafb;
+}
+
+.form-group input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    background: #fff;
+}
+
+.form-group input:hover {
+    border-color: #c7c9d3;
+}
+
+.hint {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    margin-top: 4px;
+}
+
+/* ===== Buttons ===== */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn {
+    padding: 12px 32px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+.btn-secondary {
+    background: #f3f4f6;
+    color: #4b5563;
+    border: 2px solid #e5e7eb;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+/* ===== Footer ===== */
+.footer {
+    text-align: center;
+    margin-top: 30px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+}
+
+.footer a {
+    color: #fff;
+    text-decoration: underline;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+    .header h1 {
+        font-size: 1.6rem;
+    }
+
+    .prediction-value {
+        font-size: 2.5rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Progression Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🩺 Diabetes Progression Predictor</h1>
+            <p class="subtitle">
+                Predict diabetes disease progression using a Decision Tree Regressor model
+                trained on clinical measurements.
+            </p>
+            {% if metadata and metadata.get('metrics') %}
+            <div class="model-info">
+                <span class="badge">Model: {{ metadata.get('model_name', 'Decision Tree') }}</span>
+                <span class="badge">R² Score: {{ metadata['metrics']['r2_score'] }}</span>
+                <span class="badge">MAE: {{ metadata['metrics']['mean_absolute_error'] }}</span>
+            </div>
+            {% endif %}
+        </header>
+
+        <!-- Error Alert -->
+        {% if error %}
+        <div class="alert alert-error">
+            <strong>⚠️ Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Prediction Result -->
+        {% if prediction is not none %}
+        <div class="result-card">
+            <h2>Prediction Result</h2>
+            <div class="prediction-value">{{ prediction }}</div>
+            <p class="prediction-label">Predicted Disease Progression Score</p>
+            <p class="prediction-hint">
+                Score range: {{ metadata.get('target_stats', {}).get('min', 25) | int }} – {{ metadata.get('target_stats', {}).get('max', 346) | int }}
+                (Mean: {{ metadata.get('target_stats', {}).get('mean', 152) | int }})
+            </p>
+            <!-- Severity Indicator -->
+            <div class="severity-bar">
+                <div class="severity-fill" id="severityFill"></div>
+                <div class="severity-marker" id="severityMarker"></div>
+            </div>
+            <div class="severity-labels">
+                <span>Low</span>
+                <span>Moderate</span>
+                <span>High</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Input Form -->
+        <form method="POST" action="/predict" class="prediction-form">
+            <h2>Enter Clinical Measurements</h2>
+            <p class="form-hint">Enter the patient's raw clinical values below. All fields are required.</p>
+
+            <div class="form-grid">
+                {% for feature in feature_names %}
+                <div class="form-group">
+                    <label for="{{ feature }}">
+                        {{ feature_stats.get(feature, {}).get('description', feature) }}
+                    </label>
+                    <input
+                        type="number"
+                        step="any"
+                        id="{{ feature }}"
+                        name="{{ feature }}"
+                        placeholder="e.g. {{ feature_stats.get(feature, {}).get('raw_mean', '') }}"
+                        value="{{ input_data.get(feature, '') if input_data else '' }}"
+                        required
+                    >
+                    {% if feature_stats.get(feature) %}
+                    <span class="hint">
+                        Range: {{ feature_stats[feature]['raw_min'] }} – {{ feature_stats[feature]['raw_max'] }}
+                    </span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">🔍 Predict</button>
+                <button type="reset" class="btn btn-secondary">🔄 Reset</button>
+            </div>
+        </form>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>
+                Built with Flask &amp; scikit-learn | Dataset:
+                <a href="https://scikit-learn.org/stable/datasets/toy_dataset.html#diabetes-dataset" target="_blank">
+                    sklearn Diabetes Dataset
+                </a>
+            </p>
+        </footer>
+    </div>
+
+    {% if prediction is not none %}
+    <script>
+        // Animate the severity bar
+        const prediction = {{ prediction }};
+        const minVal = {{ metadata.get('target_stats', {}).get('min', 25) }};
+        const maxVal = {{ metadata.get('target_stats', {}).get('max', 346) }};
+        const pct = Math.max(0, Math.min(100, ((prediction - minVal) / (maxVal - minVal)) * 100));
+
+        const fill = document.getElementById('severityFill');
+        const marker = document.getElementById('severityMarker');
+
+        setTimeout(() => {
+            fill.style.width = pct + '%';
+            marker.style.left = pct + '%';
+        }, 100);
+    </script>
+    {% endif %}
+</body>
+</html>
